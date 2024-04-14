@@ -1,7 +1,7 @@
 #include "../headers/puzzle.hpp"
 
-std::vector<Node> successors_8puzzle(Node& n) {
-    return std::vector<Node>();
+std::vector<ActionState> successors_8puzzle(puzzle_state& state) {
+    return std::vector<ActionState>();
 }
 
 std::vector<type_action> extract_path(Node& n) {
