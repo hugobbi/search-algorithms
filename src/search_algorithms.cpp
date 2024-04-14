@@ -60,4 +60,6 @@ std::vector<type_action> id_dfs(puzzle_state start_state, uint16_t max_depth) {
             return path;
         }
     }
+
+    return std::vector<type_action>(NO_SOLUTION); // unsolvable with this max depth
 }
