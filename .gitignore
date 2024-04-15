@@ -31,3 +31,6 @@
 *.out
 *.app
 main
+
+# My tests
+test.cpp
