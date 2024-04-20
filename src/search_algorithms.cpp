@@ -40,7 +40,7 @@ std::vector<type_action> bfs(puzzle_state start_state) {
         }
     }
 
-    return std::vector<type_action>(NO_SOLUTION); // Unsolvable
+    return std::vector<type_action>() = {NO_SOLUTION}; // Unsolvable
 }
 
 std::vector<type_action> dfs_limited_depth(puzzle_state state, uint16_t depth_limit) {
@@ -62,7 +62,7 @@ std::vector<type_action> dfs_limited_depth(puzzle_state state, uint16_t depth_li
         }
     }
 
-    return std::vector<type_action>(NO_SOLUTION); // No solution in this branch with this depth limite
+    return std::vector<type_action>() = {NO_SOLUTION}; // No solution in this branch with this depth limite
 }
 
 std::vector<type_action> id_dfs(puzzle_state start_state, uint16_t max_depth) {
@@ -75,14 +75,15 @@ std::vector<type_action> id_dfs(puzzle_state start_state, uint16_t max_depth) {
         }
     }
 
-    return std::vector<type_action>(NO_SOLUTION); // Unsolvable with this max depth
+    return std::vector<type_action>() = {NO_SOLUTION}; // Unsolvable with this max depth
 }
 
 std::vector<type_action> a_star(puzzle_state start_state) {
     // Initializing open
     std::priority_queue<Node, std::vector<Node>, AStarCompare> open;
-    if (manhattan_distance(start_state) < H_INFINITY) {
-        Node starting_node = {NULL, start_state, 0, 0, manhattan_distance(start_state)}; // TODO: define action
+    uint start_h = manhattan_distance(start_state);
+    if (start_h < H_INFINITY) {
+        Node starting_node = {NULL, start_state, 0, 0, start_h}; // TODO: define action
         open.push(starting_node);
     }
 
@@ -101,16 +102,92 @@ std::vector<type_action> a_star(puzzle_state start_state) {
                 return extract_path(n);
             }
             for (ActionState succ_action_state : successors_8puzzle(n.state)) {
-                if (manhattan_distance(succ_action_state.state) < H_INFINITY) {
-                    Node succ = Node{&n, succ_action_state.state, succ_action_state.action, n.g+1, manhattan_distance(succ_action_state.state)}; // Considering every cost to be 1
+                uint succ_h = manhattan_distance(succ_action_state.state);
+                if (succ_h < H_INFINITY) {
+                    Node succ = Node{&n, succ_action_state.state, succ_action_state.action, n.g+1, succ_h}; // Considering every cost to be 1
                     open.push(succ);
                 }
             }
         }
     }
 
-    return std::vector<type_action>(NO_SOLUTION); // Unsolvable
+    return std::vector<type_action>() = {NO_SOLUTION}; // Unsolvable
 }
+
+std::vector<type_action> gbfs(puzzle_state start_state) {
+    // Initializing open
+    std::priority_queue<Node, std::vector<Node>, GBFSCompare> open;
+    uint start_h = manhattan_distance(start_state);
+    if (start_h < H_INFINITY) {
+        Node starting_node = {NULL, start_state, 0, 0, start_h}; // TODO: define action
+        open.push(starting_node);
+    }
+
+    // Initializing distances hashmap
+    std::unordered_map<puzzle_state, uint> distances;
+
+    // Main search loop
+    while (!open.empty()) {
+        Node n = open.top();
+        open.pop();
+        // Reopening
+        if (distances.find(n.state) == distances.end() || n.g < distances[n.state]) {
+            distances[n.state] = n.g;
+            // Early goal test
+            if (n.state == GOAL_STATE_8) { 
+                return extract_path(n);
+            }
+            for (ActionState succ_action_state : successors_8puzzle(n.state)) {
+                uint succ_h = manhattan_distance(succ_action_state.state);
+                if (succ_h < H_INFINITY) {
+                    Node succ = Node{&n, succ_action_state.state, succ_action_state.action, n.g+1, succ_h}; // Considering every cost to be 1
+                    open.push(succ);
+                }
+            }
+        }
+    }
+
+    return std::vector<type_action>() = {NO_SOLUTION}; // Unsolvable
+}
+
+std::vector<type_action> id_a_star(puzzle_state start_state) {
+    Node n = {NULL, start_state, 0, 0, manhattan_distance(start_state)};
+    uint f_limit = n.h;
+    while (f_limit != H_INFINITY) {
+        FLimitSolution f_limit_solution = recursive_search(n, f_limit);
+        if (f_limit_solution.solution.front() != NO_SOLUTION) {
+            return f_limit_solution.solution;
+        }
+    }
+    
+    return std::vector<type_action>() = {NO_SOLUTION}; // Unsolvable
+}
+
+FLimitSolution recursive_search(Node n, uint f_limit) {
+    uint fn = n.g + n.h;
+    if (fn > f_limit) {
+        return FLimitSolution{fn, std::vector<type_action>() = {NO_SOLUTION}};
+    }
+
+    if (n.state == GOAL_STATE_8) {
+        return FLimitSolution{F_LIMIT_NONE, extract_path(n)};
+    }
+
+    uint next_limit = F_INFINITY;
+    for (ActionState succ_action_state : successors_8puzzle(n.state)) {
+        uint succ_h = manhattan_distance(succ_action_state.state);
+        if (succ_h < H_INFINITY) {
+            Node n = Node{&n, succ_action_state.state, succ_action_state.action, n.g+1, succ_h};
+            FLimitSolution f_limit_solution = recursive_search(n, f_limit);
+            if (f_limit_solution.solution.front() != NO_SOLUTION) {
+                return FLimitSolution{F_LIMIT_NONE, f_limit_solution.solution};
+            }
+            next_limit = std::min(next_limit, f_limit_solution.f_limit);
+        }
+    }
+    return FLimitSolution{next_limit, std::vector<type_action>() = {NO_SOLUTION}};
+}
+
 
 uint manhattan_distance(puzzle_state state) {
 
