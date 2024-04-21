@@ -15,7 +15,7 @@
 
 struct Node {
     Node* father_node;
-    puzzle_state state;
+    puzzle_8_state state;
     type_action action; // TODO: still needs to define what an action is exactly: struct{direction, tile (2 bits, 4 bits)}
     // Used in heuristic search (TODO: should another node struct be created for astar and gbfs?)
     //uint f; // possible optimization: use g and h to get f
@@ -23,22 +23,15 @@ struct Node {
     uint h;
 };
 
-struct FLimitSolution {
-    uint f_limit;
-    std::vector<type_action> solution;
-};
+solution extract_path(Node& n);
 
-std::vector<type_action> extract_path(Node& n);
-
-std::vector<type_action> bfs(puzzle_state start_state);
-std::vector<type_action> dfs_limited_depth(puzzle_state state, uint16_t depth_limit);
-std::vector<type_action> id_dfs(puzzle_state start_state, uint16_t max_depth);
-std::vector<type_action> a_star(puzzle_state start_state);
-std::vector<type_action> id_a_star(puzzle_state start_state);
-FLimitSolution recursive_search(Node n, uint f_limit);
-std::vector<type_action> gbfs(puzzle_state start_state);
-
-uint manhattan_distance(puzzle_state state);
+solution bfs(puzzle_8_state start_state);
+solution dfs_limited_depth(puzzle_8_state state, uint16_t depth_limit);
+solution id_dfs(puzzle_8_state start_state, uint16_t max_depth);
+solution a_star(puzzle_8_state start_state);
+solution id_a_star(puzzle_8_state start_state);
+std::pair<uint, solution> recursive_search(Node n, uint f_limit);
+solution gbfs(puzzle_8_state start_state);
 
 // TODO: how to implement LIFO as third comparator?
 struct AStarCompare {

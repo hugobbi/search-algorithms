@@ -40,8 +40,8 @@ puzzle_8_state swap_tiles(puzzle_8_state state, int tile1, int tile2){
 }
 
 // Get all possible next states from a given state
-std::vector<puzzle_8_state> get_next_states_8_puzzle(puzzle_8_state state){
-    std::vector<puzzle_8_state> next_states;
+std::vector<action_state> get_next_states_8_puzzle(puzzle_8_state state){
+    std::vector<action_state> action_state_pairs;
     int empty_tile = -1;
 
     // Find the empty tile
@@ -53,7 +53,7 @@ std::vector<puzzle_8_state> get_next_states_8_puzzle(puzzle_8_state state){
     }
 
     if(empty_tile == -1){
-        return next_states;  // No empty tile found, return empty vector
+        return action_state_pairs;  // No empty tile found, return empty vector
     }
 
     // Define movement and boundary checks
@@ -68,11 +68,11 @@ std::vector<puzzle_8_state> get_next_states_8_puzzle(puzzle_8_state state){
     // Generate new states for valid moves
     for (int i = 0; i < 4; ++i) {
         if (can_move[i]) {
-            next_states.push_back(swap_tiles(state, empty_tile, empty_tile + moves[i]));
+            action_state_pairs.push_back(action_state{static_cast<type_action>(i), swap_tiles(state, empty_tile, empty_tile + moves[i])});
         }
     }
 
-    return next_states;
+    return action_state_pairs;
 }
 
 std::vector<puzzle_15_state> get_next_states_15_puzzle(puzzle_15_state state){

@@ -19,7 +19,6 @@ typedef uint64_t puzzle_8_state;
 // 0 is the empty tile
 typedef uint64_t puzzle_15_state;
 
-
 // Converts a 9-element array to a puzzle_state
 puzzle_8_state array_to_8_puzzle_8_state(uint8_t* arr);
 
@@ -31,11 +30,15 @@ enum type_action {
     UP = 0,
     DOWN = 1,
     LEFT = 2,
-    RIGHT = 3
+    RIGHT = 3,
+    NONE = 4 // No action, e.g. for the root node
 };
 
+typedef std::vector<type_action> solution;
+typedef std::pair<type_action, puzzle_8_state> action_state;
+
 // Get all possible next states from a given state
-std::vector<puzzle_8_state> get_next_states_8_puzzle(puzzle_8_state state);
+std::vector<action_state> get_next_states_8_puzzle(puzzle_8_state state);
 std::vector<puzzle_15_state> get_next_states_15_puzzle(puzzle_15_state state);
 
 // Get the manhattan distance between two states
