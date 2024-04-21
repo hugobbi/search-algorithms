@@ -2,26 +2,26 @@
 #include <array>
 
 // Converts a 9-element array to a puzzle_state
-puzzle_8_state array_to_8_puzzle_8_state(uint8_t* arr){
-    puzzle_8_state state = 0;
+puzzle_state array_to_8_puzzle_state(int* arr){
+    puzzle_state state = 0;
     for(int i = 0; i < 9; i++){
-    state |= (puzzle_8_state)arr[i] << (i * BITS_PER_TILE);
+    state |= (puzzle_state)arr[i] << (i * BITS_PER_TILE);
     }
     return state;
 }
 
 // Converts as 16-element array to a puzzle_state
-puzzle_15_state array_to_puzzle_15_state(uint8_t* arr){
-    puzzle_15_state state = 0;
+puzzle_state array_to_15_puzzle_state(int* arr){
+    puzzle_state state = 0;
     for(int i = 0; i < 16; i++){
-    state |= (puzzle_15_state)arr[i] << (i * BITS_PER_TILE);
+    state |= (puzzle_state)arr[i] << (i * BITS_PER_TILE);
     }
     return state;
 }
 
 
 // Helper function to swap tiles
-puzzle_8_state swap_tiles(puzzle_8_state state, int tile1, int tile2){
+puzzle_state swap_tiles(puzzle_state state, int tile1, int tile2){
     int shift1 = tile1 * BITS_PER_TILE;
     int shift2 = tile2 * BITS_PER_TILE;
     uint64_t value1 = (state >> shift1) & static_cast<uint64_t>(0xF);
@@ -40,7 +40,7 @@ puzzle_8_state swap_tiles(puzzle_8_state state, int tile1, int tile2){
 }
 
 // Get all possible next states from a given state
-std::vector<action_state> get_next_states_8_puzzle(puzzle_8_state state){
+std::vector<action_state> get_next_states_8_puzzle(puzzle_state state){
     std::vector<action_state> action_state_pairs;
     int empty_tile = -1;
 
@@ -75,14 +75,14 @@ std::vector<action_state> get_next_states_8_puzzle(puzzle_8_state state){
     return action_state_pairs;
 }
 
-std::vector<puzzle_15_state> get_next_states_15_puzzle(puzzle_15_state state){
+std::vector<puzzle_state> get_next_states_15_puzzle(puzzle_state state){
     // Fixing some bugs (':
-    std::vector<puzzle_15_state> next_states;
+    std::vector<puzzle_state> next_states;
     return next_states;
 }
 
 // Get the manhattan distance between two states
-uint manhattan_distance_8_puzzle(puzzle_8_state state, puzzle_8_state goal_state){
+uint manhattan_distance_8_puzzle(puzzle_state state, puzzle_state goal_state){
     uint distance = 0;
     for(int i = 0; i < 9; i++){
         uint tile = (state >> (i * BITS_PER_TILE)) & 0xF;
@@ -99,7 +99,7 @@ uint manhattan_distance_8_puzzle(puzzle_8_state state, puzzle_8_state goal_state
     return distance;
 }
 
-uint manhattan_distance_15_puzzle(puzzle_15_state state, puzzle_15_state goal_state){
+uint manhattan_distance_15_puzzle(puzzle_state state, puzzle_state goal_state){
     uint distance = 0;
     for(int i = 0; i < 16; i++){
         uint tile = (state >> (i * BITS_PER_TILE)) & 0xF;
@@ -117,7 +117,7 @@ uint manhattan_distance_15_puzzle(puzzle_15_state state, puzzle_15_state goal_st
 }
 
 // Print the state of the puzzle
-void print_puzzle_8_state(puzzle_8_state state){
+void print_puzzle_8_state(puzzle_state state){
     for(int i = 0; i < 9; i++){
         std::cout << ((state >> (i * BITS_PER_TILE)) & 0xF) << " ";
         if(i % 3 == 2){
@@ -125,7 +125,7 @@ void print_puzzle_8_state(puzzle_8_state state){
         }
     }
 }
-void print_puzzle_15_state(puzzle_15_state state){
+void print_puzzle_15_state(puzzle_state state){
     for(int i = 0; i < 16; i++){
         std::cout << ((state >> (i * BITS_PER_TILE)) & 0xF) << " ";
         if(i % 4 == 3){

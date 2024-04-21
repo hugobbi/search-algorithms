@@ -1,7 +1,7 @@
 CC = g++
-CFLAGS = -std=c++17 -Wall# -std=c++11
+CFLAGS = -std=c++17 -Wall
 OUTPUT = main
-SOURCES = src/main.cpp src/search_algorithms.cpp src/puzzle.cpp
+SOURCES = src/main.cpp src/search_algorithms.cpp src/puzzle.cpp src/parser.cpp
 
 all:
 	$(CC) $(CFLAGS) $(SOURCES) -o $(OUTPUT)
