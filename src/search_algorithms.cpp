@@ -1,8 +1,8 @@
 #include "../headers/search_algorithms.hpp"
 #include "../headers/puzzle.hpp"
 
-solution extract_path(Node& n) {
-    solution path;
+type_solution extract_path(Node& n) {
+    type_solution path;
     while (n.father_node != NULL) {
         path.push_back(n.action);
         n = *n.father_node;
@@ -11,10 +11,10 @@ solution extract_path(Node& n) {
     return path;
 }
 
-solution bfs(puzzle_8_state start_state) {
+type_solution bfs(puzzle_8_state start_state) {
     // Early goal test
     if (start_state == GOAL_STATE_8) {
-        return solution();
+        return type_solution{};
     }
 
     // Initializing open and closed
@@ -33,52 +33,52 @@ solution bfs(puzzle_8_state start_state) {
             if (succ.state == GOAL_STATE_8) {  // Early goal test
                 return extract_path(succ);
             }
-            if (closed.find(succ.state) == closed.end()) { // Insert into open if nodes not in closed
+            if (closed.find(succ.state) == closed.end()) { // Insert into open if node not in closed
                 open.push(succ);
                 closed.insert(succ.state);
             }
         }
     }
 
-    return solution{NO_SOLUTION}; // Unsolvable
+    return type_solution{type_action::UNSOLVABLE}; // Unsolvable
 }
 
-solution dfs_limited_depth(puzzle_8_state state, uint16_t depth_limit) {
+type_solution dfs_limited_depth(puzzle_8_state state, uint16_t depth_limit) {
     // Early goal test
     if (state == GOAL_STATE_8) {
-        return solution();
+        return type_solution{};
     }
 
     // Expands nodes if depth limit is not reached
     if (depth_limit != 0) {
         for (const auto &[action, new_state] : get_next_states_8_puzzle(state)) {
-            solution path = dfs_limited_depth(new_state, depth_limit-1); // Call dfs on child node
+            type_solution path = dfs_limited_depth(new_state, depth_limit-1); // Call dfs on child node
 
             // If a solution is found, return the path
-            if (path.front() != NO_SOLUTION) {
+            if (path.front() != type_action::UNSOLVABLE) {
                 path.push_back(action);
                 return path;
             }
         }
     }
 
-    return solution{NO_SOLUTION}; // No solution in this branch with this depth limite
+    return type_solution{type_action::UNSOLVABLE}; // No solution in this branch with this depth limite
 }
 
-solution id_dfs(puzzle_8_state start_state, uint16_t max_depth) {
+type_solution id_dfs(puzzle_8_state start_state, uint16_t max_depth) {
     // Call dfs with limited depth for each depth limit
     for (uint16_t depth_limit = 0; depth_limit < max_depth; depth_limit++) {
-        solution path = dfs_limited_depth(start_state, depth_limit);
+        type_solution path = dfs_limited_depth(start_state, depth_limit);
         // If a solution is found, return the path
-        if (path.front() != NO_SOLUTION) {
+        if (path.front() != type_action::UNSOLVABLE) {
             return path;
         }
     }
 
-    return solution{NO_SOLUTION}; // Unsolvable with this max depth
+    return type_solution{type_action::UNSOLVABLE}; // Unsolvable with this max depth
 }
 
-solution a_star(puzzle_8_state start_state) {
+type_solution a_star(puzzle_8_state start_state) {
     // Initializing open
     std::priority_queue<Node, std::vector<Node>, AStarCompare> open;
     uint start_h = manhattan_distance_8_puzzle(start_state, GOAL_STATE_8);
@@ -87,7 +87,7 @@ solution a_star(puzzle_8_state start_state) {
         open.push(starting_node);
     }
 
-    // Initializing distances hashmap
+    // Initializing distances hashmap for reopening and duplicate detection
     std::unordered_map<puzzle_8_state, uint> distances;
 
     // Main search loop
@@ -111,10 +111,10 @@ solution a_star(puzzle_8_state start_state) {
         }
     }
 
-    return solution{NO_SOLUTION}; // Unsolvable
+    return type_solution{type_action::UNSOLVABLE}; // Unsolvable
 }
 
-solution gbfs(puzzle_8_state start_state) {
+type_solution gbfs(puzzle_8_state start_state) {
     // Initializing open
     std::priority_queue<Node, std::vector<Node>, GBFSCompare> open;
     uint start_h = manhattan_distance_8_puzzle(start_state, GOAL_STATE_8);
@@ -123,7 +123,7 @@ solution gbfs(puzzle_8_state start_state) {
         open.push(starting_node);
     }
 
-    // Initializing distances hashmap
+    // Initializing distances hashmap for reopening and duplicate detection
     std::unordered_map<puzzle_8_state, uint> distances;
 
     // Main search loop
@@ -147,30 +147,30 @@ solution gbfs(puzzle_8_state start_state) {
         }
     }
 
-    return solution{NO_SOLUTION}; // Unsolvable
+    return type_solution{type_action::UNSOLVABLE}; // Unsolvable
 }
 
-solution id_a_star(puzzle_8_state start_state) {
+type_solution id_a_star(puzzle_8_state start_state) {
     Node starting_node = {NULL, start_state, type_action::NONE, 0, manhattan_distance_8_puzzle(start_state, GOAL_STATE_8)};
     uint f_limit = starting_node.h;
     while (f_limit != H_INFINITY) {
-        std::pair<uint, solution> f_limit_solution = recursive_search(starting_node, f_limit);
-        if (f_limit_solution.second.front() != NO_SOLUTION) {
+        std::pair<uint, type_solution> f_limit_solution = recursive_search(starting_node, f_limit);
+        if (f_limit_solution.second.front() != type_action::UNSOLVABLE) {
             return f_limit_solution.second;
         }
     }
     
-    return solution{NO_SOLUTION}; // Unsolvable
+    return type_solution{type_action::UNSOLVABLE}; // Unsolvable
 }
 
-std::pair<uint, solution> recursive_search(Node n, uint f_limit) {
+std::pair<uint, type_solution> recursive_search(Node n, uint f_limit) {
     uint fn = n.g + n.h;
     if (fn > f_limit) {
-        return std::pair<uint, solution>{fn, solution{NO_SOLUTION}};
+        return std::pair<uint, type_solution>{fn, type_solution{type_action::UNSOLVABLE}};
     }
 
     if (n.state == GOAL_STATE_8) {
-        return std::pair<uint, solution>{F_LIMIT_NONE, extract_path(n)};
+        return std::pair<uint, type_solution>{F_LIMIT_NONE, extract_path(n)};
     }
 
     uint next_limit = F_INFINITY;
@@ -178,13 +178,13 @@ std::pair<uint, solution> recursive_search(Node n, uint f_limit) {
         uint succ_h = manhattan_distance_8_puzzle(new_state, GOAL_STATE_8);
         if (succ_h < H_INFINITY) {
             Node n = Node{&n, new_state, action, n.g+1, succ_h};
-            std::pair<uint, solution> f_limit_solution = recursive_search(n, f_limit);
-            if (f_limit_solution.second.front() != NO_SOLUTION) {
-                return std::pair<uint, solution>{F_LIMIT_NONE, f_limit_solution.second};
+            std::pair<uint, type_solution> f_limit_solution = recursive_search(n, f_limit);
+            if (f_limit_solution.second.front() != type_action::UNSOLVABLE) {
+                return std::pair<uint, type_solution>{F_LIMIT_NONE, f_limit_solution.second};
             }
             next_limit = std::min(next_limit, f_limit_solution.first);
         }
     }
 
-    return std::pair<uint, solution>{next_limit, solution{NO_SOLUTION}};
+    return std::pair<uint, type_solution>{next_limit, type_solution{type_action::UNSOLVABLE}};
 }

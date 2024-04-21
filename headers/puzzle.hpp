@@ -31,10 +31,11 @@ enum type_action {
     DOWN = 1,
     LEFT = 2,
     RIGHT = 3,
-    NONE = 4 // No action, e.g. for the root node
+    NONE = 4, // No action, e.g. for the root node
+    UNSOLVABLE = 5 // No solution exists
 };
 
-typedef std::vector<type_action> solution;
+// Define action-state pair type
 typedef std::pair<type_action, puzzle_8_state> action_state;
 
 // Get all possible next states from a given state
