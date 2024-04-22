@@ -11,6 +11,7 @@ int main(int argc, char* argv[]){
     }
 
     state_args* args = parse_args(argc, argv);
+    Evaluation* evaluations = new Evaluation[args->n_states]; // Used to evaluate each algorithm execution
     type_solution solutions[args->n_states];
 
     // Dispatch algorithm based on provided arg
@@ -24,7 +25,7 @@ int main(int argc, char* argv[]){
             print_puzzle_15_state(state);
         }
 
-        solutions[i] = dispatcher(argv[1])(state);
+        solutions[i] = dispatcher(argv[1])(state, evaluations[i]);
     }
 
     delete[] args;

@@ -16,9 +16,13 @@
 // Define solution type
 typedef std::vector<type_action> type_solution; 
 
-// número de nodos expandidos, comprimento da solução ótima, tempo
-// para solução, valor médio da função heurı́stica, valor da função 
-// heurı́stica no estado inicial
+struct Evaluation {
+    uint expanded_nodes;
+    uint optimal_solution_length;
+    double time_to_solution;
+    double average_heuristic_value;
+    uint initial_heuristic_value;
+};
 
 struct Node {
     Node* father_node;
@@ -29,16 +33,6 @@ struct Node {
     uint g;
     uint h;
 };
-
-type_solution extract_path(Node& n);
-
-type_solution bfs(puzzle_state start_state);
-type_solution dfs_limited_depth(puzzle_state state, uint16_t depth_limit);
-type_solution idfs(puzzle_state start_state);
-type_solution astar(puzzle_state start_state);
-type_solution idastar(puzzle_state start_state);
-std::pair<uint, type_solution> recursive_search(Node n, uint f_limit);
-type_solution gbfs(puzzle_state start_state);
 
 // TODO: how to implement LIFO as third comparator? If node a is already present, then b 
 // will only be swapped if it is strictly better. I think this is right and it solves LIFO
@@ -64,3 +58,12 @@ struct GBFSCompare {
         return a.h < b.h;
     }
 };
+
+type_solution extract_path(Node& n);
+type_solution bfs(puzzle_state start_state, Evaluation& eval);
+type_solution dfs_limited_depth(puzzle_state state, uint16_t depth_limit, Evaluation& eval);
+type_solution idfs(puzzle_state start_state, Evaluation& eval);
+type_solution astar(puzzle_state start_state, Evaluation& eval);
+type_solution idastar(puzzle_state start_state, Evaluation& eval);
+std::pair<uint, type_solution> recursive_search(Node n, uint f_limit, Evaluation& eval);
+type_solution gbfs(puzzle_state start_state, Evaluation& eval);
