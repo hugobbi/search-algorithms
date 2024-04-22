@@ -44,7 +44,7 @@ enum type_action {
 typedef std::pair<type_action, puzzle_state> action_state;
 
 // Get all possible next states from a given state
-std::vector<action_state> get_next_states_8_puzzle(puzzle_state state);
+std::vector<action_state> get_next_states_8_puzzle(puzzle_state state); // , puzzle_state father_state
 std::vector<puzzle_state> get_next_states_15_puzzle(puzzle_state state);
 
 // Get the manhattan distance between two states

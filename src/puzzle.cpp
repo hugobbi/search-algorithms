@@ -40,7 +40,7 @@ puzzle_state swap_tiles(puzzle_state state, int tile1, int tile2){
 }
 
 // Get all possible next states from a given state
-std::vector<action_state> get_next_states_8_puzzle(puzzle_state state){
+std::vector<action_state> get_next_states_8_puzzle(puzzle_state state){ // , puzzle_state father_state
     std::vector<action_state> action_state_pairs;
     int empty_tile = -1;
 
@@ -57,17 +57,21 @@ std::vector<action_state> get_next_states_8_puzzle(puzzle_state state){
     }
 
     // Define movement and boundary checks
-    std::array<int, 4> moves = {-3, 3, -1, 1}; // up, down, left, right
+    std::array<int, 4>  moves = {-3, -1, 1, 3}; // up, left, right, down // moves = {-3, 3, -1, 1}; // up, down, left, right
     std::array<bool, 4> can_move = {
         empty_tile > 2,           // Can move up
-        empty_tile < 6,           // Can move down
         empty_tile % 3 != 0,      // Can move left
-        empty_tile % 3 != 2       // Can move right
+        empty_tile % 3 != 2,      // Can move right
+        empty_tile < 6            // Can move down
     };
 
     // Generate new states for valid moves
     for (int i = 0; i < 4; ++i) {
         if (can_move[i]) {
+            // puzzle_state new_state = swap_tiles(state, empty_tile, empty_tile + moves[i]);
+            // if (new_state != father_state) {
+            //     action_state_pairs.push_back(action_state{static_cast<type_action>(i), new_state});
+            // }
             action_state_pairs.push_back(action_state{static_cast<type_action>(i), swap_tiles(state, empty_tile, empty_tile + moves[i])});
         }
     }
@@ -90,7 +94,7 @@ uint manhattan_distance_8_puzzle(puzzle_state state, puzzle_state goal_state){
             continue;
         }
         for(int j = 0; j < 9; j++){
-            if((goal_state >> (j * BITS_PER_TILE)) & 0xF == tile){
+            if(((goal_state >> (j * BITS_PER_TILE)) & 0xF) == tile){
                 distance += abs(i % 3 - j % 3) + abs(i / 3 - j / 3);
                 break;
             }
@@ -107,7 +111,7 @@ uint manhattan_distance_15_puzzle(puzzle_state state, puzzle_state goal_state){
             continue;
         }
         for(int j = 0; j < 16; j++){
-            if((goal_state >> (j * BITS_PER_TILE)) & 0xF == tile){
+            if(((goal_state >> (j * BITS_PER_TILE)) & 0xF) == tile){
                 distance += abs(i % 4 - j % 4) + abs(i / 4 - j / 4);
                 break;
             }

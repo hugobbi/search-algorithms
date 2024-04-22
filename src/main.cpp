@@ -26,6 +26,9 @@ int main(int argc, char* argv[]){
         }
 
         solutions[i] = dispatcher(argv[1])(state, evaluations[i]);
+        evaluations[i].time_to_solution = calculate_elapsed_time(evaluations[i].start_time);
+        evaluations[i].optimal_solution_length = solutions[i].size()-1; // -1 because the first action is NONE
+        print_evaluation(evaluations[i]);
     }
 
     delete[] args;

@@ -6,6 +6,7 @@
 #include <set>
 #include <unordered_map>
 #include <algorithm>
+#include <chrono>
 #include "puzzle.hpp"
 
 #define H_INFINITY 1000000
@@ -17,11 +18,12 @@
 typedef std::vector<type_action> type_solution; 
 
 struct Evaluation {
-    uint expanded_nodes;
-    uint optimal_solution_length;
-    double time_to_solution;
-    double average_heuristic_value;
-    uint initial_heuristic_value;
+    uint expanded_nodes = 0;
+    uint optimal_solution_length = 0;
+    double time_to_solution = 0;
+    std::chrono::system_clock::time_point start_time;
+    double average_heuristic_value = 0;
+    uint initial_heuristic_value = 0;
 };
 
 struct Node {
@@ -59,7 +61,7 @@ struct GBFSCompare {
     }
 };
 
-type_solution extract_path(Node& n);
+type_solution extract_path(Node* n);
 type_solution bfs(puzzle_state start_state, Evaluation& eval);
 type_solution dfs_limited_depth(puzzle_state state, uint16_t depth_limit, Evaluation& eval);
 type_solution idfs(puzzle_state start_state, Evaluation& eval);
@@ -67,3 +69,5 @@ type_solution astar(puzzle_state start_state, Evaluation& eval);
 type_solution idastar(puzzle_state start_state, Evaluation& eval);
 std::pair<uint, type_solution> recursive_search(Node n, uint f_limit, Evaluation& eval);
 type_solution gbfs(puzzle_state start_state, Evaluation& eval);
+double calculate_elapsed_time(std::chrono::system_clock::time_point start_time);
+void print_evaluation(const Evaluation& eval);

@@ -1,26 +1,32 @@
 #include "../headers/search_algorithms.hpp"
 #include "../headers/puzzle.hpp"
 
-type_solution extract_path(Node& n) {
+type_solution extract_path(Node* n) {
     type_solution path;
-    while (n.father_node != NULL) {
-        path.push_back(n.action);
-        n = *n.father_node;
+    while (n->father_node != nullptr) {
+        Node* father = n->father_node;
+        delete n; // frees memory on the way
+        path.push_back(father->action);
+        n = father;
     }
 
-    path.push_back(n.action); // Root node
+    path.push_back(n->action); // Root node
+    delete n;
 
     return path;
 }
 
 type_solution bfs(puzzle_state start_state, Evaluation& eval) {
+    eval.initial_heuristic_value = manhattan_distance_8_puzzle(start_state, GOAL_STATE_8);
+    eval.start_time = std::chrono::high_resolution_clock::now();
+
     // Early goal test
     if (start_state == GOAL_STATE_8) {
         return type_solution{type_action::NONE};
     }
 
     // Initializing open and closed
-    Node starting_node = {NULL, start_state, type_action::NONE};
+    Node starting_node = Node{nullptr, start_state, type_action::NONE};
     std::queue<Node> open;
     open.push(starting_node);
     std::set<puzzle_state> closed;
@@ -28,16 +34,18 @@ type_solution bfs(puzzle_state start_state, Evaluation& eval) {
 
     // Main search loop
     while (!open.empty()) {
-        Node n = open.front();
+        Node* n = new Node{open.front()};
         open.pop();
-        for (const auto &[action, new_state] : get_next_states_8_puzzle(n.state)) { // A possible optimization is to only calculate new action/state after checking if previous state is goal
-            Node succ = Node{&n, new_state, action};
-            if (succ.state == GOAL_STATE_8) {  // Early goal test
+        eval.expanded_nodes++;
+        for (const auto &[action, new_state] : get_next_states_8_puzzle(n->state)) { // A possible optimization is to only calculate new action/state after checking if previous state is goal
+
+            Node* succ = new Node{n, new_state, action};
+            if (succ->state == GOAL_STATE_8) {  // Early goal test
                 return extract_path(succ);
             }
-            if (closed.find(succ.state) == closed.end()) { // Insert into open if node not in closed
-                open.push(succ);
-                closed.insert(succ.state);
+            if (closed.find(succ->state) == closed.end()) { // Insert into open if node not in closed
+                open.push(*succ);
+                closed.insert(succ->state);
             }
         }
     }
@@ -101,7 +109,7 @@ type_solution astar(puzzle_state start_state, Evaluation& eval) {
             distances[n.state] = n.g;
             // Early goal test
             if (n.state == GOAL_STATE_8) { // TODO: pass goal state as parameter to avoid hardcoding 15 puzzle
-                return extract_path(n);
+                return extract_path(&n);
             }
             for (const auto &[action, new_state] : get_next_states_8_puzzle(n.state)) {
                 uint succ_h = manhattan_distance_8_puzzle(new_state, GOAL_STATE_8);
@@ -137,7 +145,7 @@ type_solution gbfs(puzzle_state start_state, Evaluation& eval) {
             distances[n.state] = n.g;
             // Early goal test
             if (n.state == GOAL_STATE_8) { 
-                return extract_path(n);
+                return extract_path(&n);
             }
             for (const auto &[action, new_state] : get_next_states_8_puzzle(n.state)) {
                 uint succ_h = manhattan_distance_8_puzzle(new_state, GOAL_STATE_8);
@@ -172,7 +180,7 @@ std::pair<uint, type_solution> recursive_search(Node n, uint f_limit, Evaluation
     }
 
     if (n.state == GOAL_STATE_8) {
-        return std::pair<uint, type_solution>{F_LIMIT_NONE, extract_path(n)};
+        return std::pair<uint, type_solution>{F_LIMIT_NONE, extract_path(&n)};
     }
 
     uint next_limit = F_INFINITY;
@@ -189,4 +197,16 @@ std::pair<uint, type_solution> recursive_search(Node n, uint f_limit, Evaluation
     }
 
     return std::pair<uint, type_solution>{next_limit, type_solution{type_action::UNSOLVABLE}};
+}
+
+double calculate_elapsed_time(std::chrono::system_clock::time_point start_time) {
+    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count() / 1000000.0;
+}
+
+void print_evaluation(const Evaluation& eval) {
+    std::cout << "Expanded nodes: " << eval.expanded_nodes << std::endl;
+    std::cout << "Optimal solution length: " << eval.optimal_solution_length << std::endl;
+    std::cout << "Time to solution: " << eval.time_to_solution << std::endl;
+    std::cout << "Average heuristic value: " << eval.average_heuristic_value << std::endl;
+    std::cout << "Initial heuristic value: " << eval.initial_heuristic_value << std::endl;
 }
