@@ -8,13 +8,15 @@ type_solution extract_path(Node& n) {
         n = *n.father_node;
     }
 
+    path.push_back(n.action); // Root node
+
     return path;
 }
 
 type_solution bfs(puzzle_state start_state) {
     // Early goal test
     if (start_state == GOAL_STATE_8) {
-        return type_solution{};
+        return type_solution{type_action::NONE};
     }
 
     // Initializing open and closed
@@ -46,7 +48,7 @@ type_solution bfs(puzzle_state start_state) {
 type_solution dfs_limited_depth(puzzle_state state, uint16_t depth_limit) {
     // Early goal test
     if (state == GOAL_STATE_8) {
-        return type_solution{};
+        return type_solution{type_action::NONE};
     }
 
     // Expands nodes if depth limit is not reached
