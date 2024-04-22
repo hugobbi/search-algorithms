@@ -54,4 +54,3 @@ uint manhattan_distance_15_puzzle(puzzle_state state, puzzle_state goal_state);
 // Print the state of the puzzle
 void print_puzzle_8_state(puzzle_state state);
 void print_puzzle_15_state(puzzle_state state);
-
