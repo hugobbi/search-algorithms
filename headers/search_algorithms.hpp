@@ -16,6 +16,10 @@
 // Define solution type
 typedef std::vector<type_action> type_solution; 
 
+// número de nodos expandidos, comprimento da solução ótima, tempo
+// para solução, valor médio da função heurı́stica, valor da função 
+// heurı́stica no estado inicial
+
 struct Node {
     Node* father_node;
     puzzle_state state;

@@ -27,5 +27,7 @@ int main(int argc, char* argv[]){
         solutions[i] = dispatcher(argv[1])(state);
     }
 
+    delete[] args;
+
     return 0;
 }
