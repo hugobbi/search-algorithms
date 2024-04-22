@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <cstdint>
+#include "../headers/metrics.hpp"
 
 #define BITS_PER_TILE 4 
 #define GOAL_STATE_8 0b100001110110010101000011001000010000
@@ -48,7 +49,7 @@ std::vector<action_state> get_next_states_8_puzzle(puzzle_state state); // , puz
 std::vector<puzzle_state> get_next_states_15_puzzle(puzzle_state state);
 
 // Get the manhattan distance between two states
-uint manhattan_distance_8_puzzle(puzzle_state state, puzzle_state goal_state);
+uint manhattan_distance_8_puzzle(puzzle_state state, puzzle_state goal_state, Evaluation& eval);
 uint manhattan_distance_15_puzzle(puzzle_state state, puzzle_state goal_state);
 
 // Print the state of the puzzle

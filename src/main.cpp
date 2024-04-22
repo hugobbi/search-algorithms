@@ -28,6 +28,7 @@ int main(int argc, char* argv[]){
         solutions[i] = dispatcher(argv[1])(state, evaluations[i]);
         evaluations[i].time_to_solution = calculate_elapsed_time(evaluations[i].start_time);
         evaluations[i].optimal_solution_length = solutions[i].size()-1; // -1 because the first action is NONE
+        evaluations[i].average_heuristic_value = evaluations[i].heuristic_calculation_count == 1 ? 0 : evaluations[i].average_heuristic_value / evaluations[i].heuristic_calculation_count;
         print_evaluation(evaluations[i]);
     }
 

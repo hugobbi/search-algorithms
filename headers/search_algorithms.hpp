@@ -6,8 +6,8 @@
 #include <set>
 #include <unordered_map>
 #include <algorithm>
-#include <chrono>
 #include "puzzle.hpp"
+#include "metrics.hpp"
 
 #define H_INFINITY 1000000
 #define F_INFINITY 1000000
@@ -17,47 +17,39 @@
 // Define solution type
 typedef std::vector<type_action> type_solution; 
 
-struct Evaluation {
-    uint expanded_nodes = 0;
-    uint optimal_solution_length = 0;
-    double time_to_solution = 0;
-    std::chrono::system_clock::time_point start_time;
-    double average_heuristic_value = 0;
-    uint initial_heuristic_value = 0;
-};
-
 struct Node {
     Node* father_node;
     puzzle_state state;
     type_action action;
     // Used in heuristic search (TODO: should another node struct be created for astar and gbfs?)
     //uint f; // possible optimization: use g and h to get f
-    uint g;
-    uint h;
+    uint g = 0;
+    uint h = 0;
 };
 
 // TODO: how to implement LIFO as third comparator? If node a is already present, then b 
 // will only be swapped if it is strictly better. I think this is right and it solves LIFO
 // as third comparator 
 struct AStarCompare {
-    bool operator()(Node& a, Node& b) const {
+    bool operator()(const Node& a, const Node& b) const {
         uint af = a.g + a.h;
         uint bf = b.g + b.h;
+
         if (af == bf) {
-            return a.h < b.h;
+            return b.h < a.h;
         }
 
-        return af < bf;
+        return bf < af;
     }
 };
 
 struct GBFSCompare {
-    bool operator()(Node& a, Node& b) const {
+    bool operator()(const Node& a, const Node& b) const {
         if (a.h == b.h) {
-            return a.g > b.g;
+            return b.g < a.g;
         }
 
-        return a.h < b.h;
+        return b.h < a.h;
     }
 };
 

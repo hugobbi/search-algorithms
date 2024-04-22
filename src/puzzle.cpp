@@ -56,7 +56,7 @@ std::vector<action_state> get_next_states_8_puzzle(puzzle_state state){ // , puz
         return action_state_pairs;  // No empty tile found, return empty vector
     }
 
-    // Define movement and boundary checks
+    // Define movement and boundary checks      // Obs: it doesn't look like it is expanding in the right order
     std::array<int, 4>  moves = {-3, -1, 1, 3}; // up, left, right, down // moves = {-3, 3, -1, 1}; // up, down, left, right
     std::array<bool, 4> can_move = {
         empty_tile > 2,           // Can move up
@@ -86,7 +86,8 @@ std::vector<puzzle_state> get_next_states_15_puzzle(puzzle_state state){
 }
 
 // Get the manhattan distance between two states
-uint manhattan_distance_8_puzzle(puzzle_state state, puzzle_state goal_state){
+uint manhattan_distance_8_puzzle(puzzle_state state, puzzle_state goal_state, Evaluation& eval){
+    // TODO: determine if state is solvable
     uint distance = 0;
     for(int i = 0; i < 9; i++){
         uint tile = (state >> (i * BITS_PER_TILE)) & 0xF;
@@ -100,6 +101,10 @@ uint manhattan_distance_8_puzzle(puzzle_state state, puzzle_state goal_state){
             }
         }
     }
+
+    eval.average_heuristic_value += distance;
+    eval.heuristic_calculation_count++;
+    
     return distance;
 }
 

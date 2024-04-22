@@ -17,8 +17,10 @@ type_solution extract_path(Node* n) {
 }
 
 type_solution bfs(puzzle_state start_state, Evaluation& eval) {
-    eval.initial_heuristic_value = manhattan_distance_8_puzzle(start_state, GOAL_STATE_8);
     eval.start_time = std::chrono::high_resolution_clock::now();
+    
+    uint starting_node_h = manhattan_distance_8_puzzle(start_state, GOAL_STATE_8, eval);
+    eval.initial_heuristic_value = starting_node_h;
 
     // Early goal test
     if (start_state == GOAL_STATE_8) {
@@ -34,9 +36,10 @@ type_solution bfs(puzzle_state start_state, Evaluation& eval) {
 
     // Main search loop
     while (!open.empty()) {
+        eval.expanded_nodes++;
+
         Node* n = new Node{open.front()};
         open.pop();
-        eval.expanded_nodes++;
         for (const auto &[action, new_state] : get_next_states_8_puzzle(n->state)) { // A possible optimization is to only calculate new action/state after checking if previous state is goal
 
             Node* succ = new Node{n, new_state, action};
@@ -54,6 +57,8 @@ type_solution bfs(puzzle_state start_state, Evaluation& eval) {
 }
 
 type_solution dfs_limited_depth(puzzle_state state, uint16_t depth_limit, Evaluation& eval) {
+    eval.expanded_nodes++;
+
     // Early goal test
     if (state == GOAL_STATE_8) {
         return type_solution{type_action::NONE};
@@ -76,6 +81,11 @@ type_solution dfs_limited_depth(puzzle_state state, uint16_t depth_limit, Evalua
 }
 
 type_solution idfs(puzzle_state start_state, Evaluation& eval) {
+    eval.start_time = std::chrono::high_resolution_clock::now();
+    
+    uint starting_node_h = manhattan_distance_8_puzzle(start_state, GOAL_STATE_8, eval);
+    eval.initial_heuristic_value = starting_node_h;
+
     // Call dfs with limited depth for each depth limit
     for (uint16_t depth_limit = 0; depth_limit < MAX_DEPTH; depth_limit++) {
         type_solution path = dfs_limited_depth(start_state, depth_limit, eval);
@@ -89,11 +99,16 @@ type_solution idfs(puzzle_state start_state, Evaluation& eval) {
 }
 
 type_solution astar(puzzle_state start_state, Evaluation& eval) {
+    eval.start_time = std::chrono::high_resolution_clock::now();
+
+    uint starting_node_h = manhattan_distance_8_puzzle(start_state, GOAL_STATE_8, eval);
+    eval.initial_heuristic_value = starting_node_h;
+
     // Initializing open
     std::priority_queue<Node, std::vector<Node>, AStarCompare> open;
-    uint start_h = manhattan_distance_8_puzzle(start_state, GOAL_STATE_8);
-    if (start_h < H_INFINITY) {
-        Node starting_node = {NULL, start_state, type_action::NONE, 0, start_h}; 
+
+    if (starting_node_h < H_INFINITY) {
+        Node starting_node = {NULL, start_state, type_action::NONE, 0, starting_node_h}; 
         open.push(starting_node);
     }
 
@@ -102,20 +117,22 @@ type_solution astar(puzzle_state start_state, Evaluation& eval) {
 
     // Main search loop
     while (!open.empty()) {
-        Node n = open.top();
+        eval.expanded_nodes++;
+        
+        Node* n = new Node{open.top()};
         open.pop();
         // Reopening
-        if (distances.find(n.state) == distances.end() || n.g < distances[n.state]) {
-            distances[n.state] = n.g;
+        if (distances.find(n->state) == distances.end() || n->g < distances[n->state]) {
+            distances[n->state] = n->g;
             // Early goal test
-            if (n.state == GOAL_STATE_8) { // TODO: pass goal state as parameter to avoid hardcoding 15 puzzle
-                return extract_path(&n);
+            if (n->state == GOAL_STATE_8) { // TODO: pass goal state as parameter to avoid hardcoding 15 puzzle
+                return extract_path(n);
             }
-            for (const auto &[action, new_state] : get_next_states_8_puzzle(n.state)) {
-                uint succ_h = manhattan_distance_8_puzzle(new_state, GOAL_STATE_8);
+            for (const auto &[action, new_state] : get_next_states_8_puzzle(n->state)) {
+                uint succ_h = manhattan_distance_8_puzzle(new_state, GOAL_STATE_8, eval);
                 if (succ_h < H_INFINITY) {
-                    Node succ = Node{&n, new_state, action, n.g+1, succ_h}; // Considering every cost to be 1
-                    open.push(succ);
+                    Node* succ = new Node{n, new_state, action, n->g+1, succ_h}; // Considering every cost to be 1
+                    open.push(*succ);
                 }
             }
         }
@@ -125,11 +142,16 @@ type_solution astar(puzzle_state start_state, Evaluation& eval) {
 }
 
 type_solution gbfs(puzzle_state start_state, Evaluation& eval) {
+    eval.start_time = std::chrono::high_resolution_clock::now();
+
+    uint starting_node_h = manhattan_distance_8_puzzle(start_state, GOAL_STATE_8, eval);
+    eval.initial_heuristic_value = starting_node_h;
+
     // Initializing open
     std::priority_queue<Node, std::vector<Node>, GBFSCompare> open;
-    uint start_h = manhattan_distance_8_puzzle(start_state, GOAL_STATE_8);
-    if (start_h < H_INFINITY) {
-        Node starting_node = {NULL, start_state, type_action::NONE, 0, start_h};
+
+    if (starting_node_h < H_INFINITY) {
+        Node starting_node = {NULL, start_state, type_action::NONE, 0, starting_node_h}; 
         open.push(starting_node);
     }
 
@@ -138,20 +160,22 @@ type_solution gbfs(puzzle_state start_state, Evaluation& eval) {
 
     // Main search loop
     while (!open.empty()) {
-        Node n = open.top();
+        eval.expanded_nodes++;
+        
+        Node* n = new Node{open.top()};
         open.pop();
         // Reopening
-        if (distances.find(n.state) == distances.end() || n.g < distances[n.state]) {
-            distances[n.state] = n.g;
+        if (distances.find(n->state) == distances.end() || n->g < distances[n->state]) {
+            distances[n->state] = n->g;
             // Early goal test
-            if (n.state == GOAL_STATE_8) { 
-                return extract_path(&n);
+            if (n->state == GOAL_STATE_8) { // TODO: pass goal state as parameter to avoid hardcoding 15 puzzle
+                return extract_path(n);
             }
-            for (const auto &[action, new_state] : get_next_states_8_puzzle(n.state)) {
-                uint succ_h = manhattan_distance_8_puzzle(new_state, GOAL_STATE_8);
+            for (const auto &[action, new_state] : get_next_states_8_puzzle(n->state)) {
+                uint succ_h = manhattan_distance_8_puzzle(new_state, GOAL_STATE_8, eval);
                 if (succ_h < H_INFINITY) {
-                    Node succ = Node{&n, new_state, action, n.g+1, succ_h}; // Considering every cost to be 1
-                    open.push(succ);
+                    Node* succ = new Node{n, new_state, action, n->g+1, succ_h}; // Considering every cost to be 1
+                    open.push(*succ);
                 }
             }
         }
@@ -161,8 +185,14 @@ type_solution gbfs(puzzle_state start_state, Evaluation& eval) {
 }
 
 type_solution idastar(puzzle_state start_state, Evaluation& eval) {
-    Node starting_node = {NULL, start_state, type_action::NONE, 0, manhattan_distance_8_puzzle(start_state, GOAL_STATE_8)};
+    eval.start_time = std::chrono::high_resolution_clock::now();
+
+    uint starting_node_h = manhattan_distance_8_puzzle(start_state, GOAL_STATE_8, eval);
+    eval.initial_heuristic_value = starting_node_h;
+
+    Node starting_node = {NULL, start_state, type_action::NONE, 0, starting_node_h};
     uint f_limit = starting_node.h;
+
     while (f_limit != H_INFINITY) {
         std::pair<uint, type_solution> f_limit_solution = recursive_search(starting_node, f_limit, eval);
         if (f_limit_solution.second.front() != type_action::UNSOLVABLE) {
@@ -174,6 +204,8 @@ type_solution idastar(puzzle_state start_state, Evaluation& eval) {
 }
 
 std::pair<uint, type_solution> recursive_search(Node n, uint f_limit, Evaluation& eval) {
+    eval.expanded_nodes++;
+
     uint fn = n.g + n.h;
     if (fn > f_limit) {
         return std::pair<uint, type_solution>{fn, type_solution{type_action::UNSOLVABLE}};
@@ -185,10 +217,10 @@ std::pair<uint, type_solution> recursive_search(Node n, uint f_limit, Evaluation
 
     uint next_limit = F_INFINITY;
     for (const auto &[action, new_state] : get_next_states_8_puzzle(n.state)) {
-        uint succ_h = manhattan_distance_8_puzzle(new_state, GOAL_STATE_8);
+        uint succ_h = manhattan_distance_8_puzzle(new_state, GOAL_STATE_8, eval);
         if (succ_h < H_INFINITY) {
-            Node n = Node{&n, new_state, action, n.g+1, succ_h};
-            std::pair<uint, type_solution> f_limit_solution = recursive_search(n, f_limit, eval);
+            Node* succ = new Node{&n, new_state, action, n.g+1, succ_h};
+            std::pair<uint, type_solution> f_limit_solution = recursive_search(*succ, f_limit, eval);
             if (f_limit_solution.second.front() != type_action::UNSOLVABLE) {
                 return std::pair<uint, type_solution>{F_LIMIT_NONE, f_limit_solution.second};
             }
