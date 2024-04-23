@@ -40,7 +40,7 @@ puzzle_state swap_tiles(puzzle_state state, int tile1, int tile2){
 }
 
 // Get all possible next states from a given state
-std::vector<action_state> get_next_states_8_puzzle(puzzle_state state){ // , puzzle_state father_state
+std::vector<action_state> get_next_states_8_puzzle(const puzzle_state& state, const puzzle_state& father_state){ // , puzzle_state father_state
     std::vector<action_state> action_state_pairs;
     int empty_tile = -1;
 
@@ -57,7 +57,7 @@ std::vector<action_state> get_next_states_8_puzzle(puzzle_state state){ // , puz
     }
 
     // Define movement and boundary checks      // Obs: it doesn't look like it is expanding in the right order
-    std::array<int, 4>  moves = {-3, -1, 1, 3}; // up, left, right, down // moves = {-3, 3, -1, 1}; // up, down, left, right
+    std::array<int, 4>  moves = {-3, -1, 1, 3}; // up, left, right, down
     std::array<bool, 4> can_move = {
         empty_tile > 2,           // Can move up
         empty_tile % 3 != 0,      // Can move left
@@ -68,11 +68,11 @@ std::vector<action_state> get_next_states_8_puzzle(puzzle_state state){ // , puz
     // Generate new states for valid moves
     for (int i = 0; i < 4; ++i) {
         if (can_move[i]) {
-            // puzzle_state new_state = swap_tiles(state, empty_tile, empty_tile + moves[i]);
-            // if (new_state != father_state) {
-            //     action_state_pairs.push_back(action_state{static_cast<type_action>(i), new_state});
-            // }
-            action_state_pairs.push_back(action_state{static_cast<type_action>(i), swap_tiles(state, empty_tile, empty_tile + moves[i])});
+            puzzle_state new_state = swap_tiles(state, empty_tile, empty_tile + moves[i]);
+            if (new_state != father_state) {
+                action_state_pairs.push_back(action_state{static_cast<type_action>(i), new_state});
+            }
+            //action_state_pairs.push_back(action_state{static_cast<type_action>(i), swap_tiles(state, empty_tile, empty_tile + moves[i])});
         }
     }
 
@@ -86,7 +86,7 @@ std::vector<puzzle_state> get_next_states_15_puzzle(puzzle_state state){
 }
 
 // Get the manhattan distance between two states
-uint manhattan_distance_8_puzzle(puzzle_state state, puzzle_state goal_state, Evaluation& eval){
+uint manhattan_distance_8_puzzle(const puzzle_state& state, const puzzle_state& goal_state, Evaluation& eval){
     // TODO: determine if state is solvable
     uint distance = 0;
     for(int i = 0; i < 9; i++){
@@ -104,7 +104,7 @@ uint manhattan_distance_8_puzzle(puzzle_state state, puzzle_state goal_state, Ev
 
     eval.average_heuristic_value += distance;
     eval.heuristic_calculation_count++;
-    
+
     return distance;
 }
 
@@ -126,7 +126,7 @@ uint manhattan_distance_15_puzzle(puzzle_state state, puzzle_state goal_state){
 }
 
 // Print the state of the puzzle
-void print_puzzle_8_state(puzzle_state state){
+void print_puzzle_8_state(const puzzle_state& state){
     for(int i = 0; i < 9; i++){
         std::cout << ((state >> (i * BITS_PER_TILE)) & 0xF) << " ";
         if(i % 3 == 2){

@@ -7,10 +7,10 @@ operation dispatcher(char* fn_name){
 	return idfs;
     }else if(strcmp(fn_name, "-astar") == 0){
 	return astar;
-    }else if(strcmp(fn_name, "-idastar") == 0){
-	return idastar;
     }else if(strcmp(fn_name, "-gbfs") == 0){
 	return gbfs;
+    }else if(strcmp(fn_name, "-idastar") == 0){
+	return idastar;
     }
     
     std::cout << RED << "[ERROR]" << NRM << " Invalid algorithm provided\n";

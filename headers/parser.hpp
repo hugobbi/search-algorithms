@@ -10,7 +10,7 @@
 #define NRM  "\x1B[0m"
 #define RED  "\x1B[31m"
 
-typedef type_solution(*operation)(puzzle_state, Evaluation&);
+typedef type_solution(*operation)(const puzzle_state&, Evaluation&);
 
 struct state_args {
     int state_args_size;
