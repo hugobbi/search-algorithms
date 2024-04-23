@@ -180,7 +180,7 @@ type_solution gbfs(const puzzle_state& start_state, Evaluation& eval) {
             father_state = n->father_node == nullptr ? NONE_STATE : n->father_node->state;
 
             eval.expanded_nodes++;
-            
+
             for (const auto &[action, new_state] : get_next_states_8_puzzle(n->state, father_state)) {
                 uint succ_h = manhattan_distance_8_puzzle(new_state, GOAL_STATE_8, eval);
                 if (succ_h < H_INFINITY) {
@@ -200,10 +200,10 @@ type_solution idastar(const puzzle_state& start_state, Evaluation& eval) {
     uint starting_node_h = manhattan_distance_8_puzzle(start_state, GOAL_STATE_8, eval);
     eval.initial_heuristic_value = starting_node_h;
 
-    Node starting_node = {nullptr, start_state, type_action::NONE, 0, starting_node_h};
-    std::pair<uint, type_solution> f_limit_solution = {starting_node.h, type_solution{type_action::UNSOLVABLE}};
+    Node* starting_node = new Node{nullptr, start_state, type_action::NONE, 0, starting_node_h};
+    std::pair<uint, type_solution> f_limit_solution = {starting_node->h, type_solution{type_action::UNSOLVABLE}};
     while (f_limit_solution.first != F_INFINITY) {
-        f_limit_solution = recursive_search(starting_node, f_limit_solution.first, eval);
+        f_limit_solution = recursive_search(*starting_node, f_limit_solution.first, eval);
         if (f_limit_solution.second.front() != type_action::UNSOLVABLE) {
             return f_limit_solution.second;
         }
