@@ -34,9 +34,9 @@ puzzle_state array_to_15_puzzle_state(int* arr);
 // Enum representing the possible actions in the tile puzzle
 enum type_action {
     UP = 0,
-    DOWN = 1,
-    LEFT = 2,
-    RIGHT = 3,
+    LEFT = 1,
+    RIGHT = 2,
+    DOWN = 3,
     NONE = 4, // No action, e.g. for the root node
     UNSOLVABLE = 5 // No solution exists
 };

@@ -72,7 +72,6 @@ std::vector<action_state> get_next_states_8_puzzle(const puzzle_state& state, co
             if (new_state != father_state) {
                 action_state_pairs.push_back(action_state{static_cast<type_action>(i), new_state});
             }
-            //action_state_pairs.push_back(action_state{static_cast<type_action>(i), swap_tiles(state, empty_tile, empty_tile + moves[i])});
         }
     }
 
