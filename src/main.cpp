@@ -2,6 +2,7 @@
 #include "../headers/puzzle.hpp"
 #include "../headers/search_algorithms.hpp"
 #include "../headers/parser.hpp"
+#include "../headers/metrics.hpp"
 
 int main(int argc, char* argv[]){
     // Check if algorithm was provided
@@ -19,10 +20,10 @@ int main(int argc, char* argv[]){
         puzzle_state state;
         if (args->is_8_puzzle) {
             state = array_to_8_puzzle_state(args->states[i]);
-            print_puzzle_8_state(state);
+            //print_puzzle_8_state(state);
         } else {
             state = array_to_15_puzzle_state(args->states[i]);
-            print_puzzle_15_state(state);
+            //print_puzzle_15_state(state);
         }
 
         solutions[i] = dispatcher(argv[1])(state, evaluations[i]);
@@ -32,7 +33,10 @@ int main(int argc, char* argv[]){
         print_evaluation(evaluations[i]);
     }
 
+    write_evaluations(evaluations, args->n_states, argv[1], args->is_8_puzzle);
+
     delete[] args;
+    delete[] evaluations;
 
     return 0;
 }

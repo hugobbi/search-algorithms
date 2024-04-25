@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <vector>
+#include <array>
 #include <cstdint>
 #include "../headers/metrics.hpp"
 

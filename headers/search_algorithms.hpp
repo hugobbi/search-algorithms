@@ -51,6 +51,7 @@ struct GBFSCompare {
         return b.h < a.h;
     }
 };
+
 // Search algorithms
 type_solution extract_path(Node* n);
 type_solution bfs(const puzzle_state& start_state, Evaluation& eval);
@@ -60,7 +61,3 @@ type_solution astar(const puzzle_state& start_state, Evaluation& eval);
 type_solution gbfs(const puzzle_state& start_state, Evaluation& eval);
 type_solution idastar(const puzzle_state& start_state, Evaluation& eval);
 std::pair<uint, type_solution> recursive_search(Node& n, uint f_limit, Evaluation& eval);
-
-// Utility functions
-double calculate_elapsed_time(const std::chrono::system_clock::time_point& start_time);
-void print_evaluation(const Evaluation& eval);

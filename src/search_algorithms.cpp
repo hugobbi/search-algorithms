@@ -1,5 +1,4 @@
 #include "../headers/search_algorithms.hpp"
-#include "../headers/puzzle.hpp"
 
 type_solution extract_path(Node* n) {
     type_solution path;
@@ -241,16 +240,4 @@ std::pair<uint, type_solution> recursive_search(Node& n, uint f_limit, Evaluatio
     }
 
     return std::pair<uint, type_solution>{next_limit, type_solution{type_action::UNSOLVABLE}};
-}
-
-double calculate_elapsed_time(const std::chrono::system_clock::time_point& start_time) {
-    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count() / 1000000.0;
-}
-
-void print_evaluation(const Evaluation& eval) {
-    std::cout << "Expanded nodes: " << eval.expanded_nodes << std::endl;
-    std::cout << "Optimal solution length: " << eval.optimal_solution_length << std::endl;
-    std::cout << "Time to solution: " << eval.time_to_solution << std::endl;
-    std::cout << "Average heuristic value: " << eval.average_heuristic_value << std::endl;
-    std::cout << "Initial heuristic value: " << eval.initial_heuristic_value << std::endl;
 }

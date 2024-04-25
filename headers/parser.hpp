@@ -2,13 +2,11 @@
 
 #include <string.h> // strcmp is slightly faster
 #include <stdlib.h>
+#include <fstream>
 #include "../headers/puzzle.hpp"
 #include "../headers/search_algorithms.hpp"
 
 #define MAX_STATES 100
-// TTY control codes for pretty printing (:
-#define NRM  "\x1B[0m"
-#define RED  "\x1B[31m"
 
 typedef type_solution(*operation)(const puzzle_state&, Evaluation&);
 

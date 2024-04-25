@@ -1,5 +1,4 @@
 #include "../headers/puzzle.hpp"
-#include <array>
 
 // Converts a 9-element array to a puzzle_state
 puzzle_state array_to_8_puzzle_state(int* arr){
