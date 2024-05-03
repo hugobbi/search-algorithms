@@ -131,15 +131,16 @@ type_solution astar(const puzzle_state& start_state, Evaluation& eval) {
             puzzle_state father_state; // Getting father state as to not generate it when getting successors
             father_state = n->father_node == nullptr ? NONE_STATE : n->father_node->state;
             
-            eval.expanded_nodes++;
-
+            int expanded = 0;
             for (const auto &[action, new_state] : get_next_states_8_puzzle(n->state, father_state)) {
+                expanded = 1;
                 uint succ_h = manhattan_distance_8_puzzle(new_state, GOAL_STATE_8, eval);
                 if (succ_h < H_INFINITY) {
                     Node* succ = new Node{n, new_state, action, n->g+1, succ_h}; // Considering every cost to be 1
                     open.push(*succ);
                 }
             }
+            eval.expanded_nodes += expanded;
         }
     }
 
