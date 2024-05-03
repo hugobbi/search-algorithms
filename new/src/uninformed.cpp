@@ -12,6 +12,10 @@
 void bfs_graph(state_t state, int& expanded_nodes, int& found_cost, int& start_heuristic){
     expanded_nodes = 0;
     start_heuristic = calculate_manhattan_distance(state, GOAL_STATE);
+    if(state == GOAL_STATE){
+        found_cost = 0;
+        return;
+    }
 
     std::deque<search_node_t> open;
     std::unordered_set<state_t> closed;
