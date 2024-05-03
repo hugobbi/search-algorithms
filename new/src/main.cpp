@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
         }
     } else if(algorithm == "-idfs") {
         for(state_t state : states) {
-            run_ids(state);
+            run_idfs(state);
         }
     } else if(algorithm == "-astar") {
         for(state_t state : states) {

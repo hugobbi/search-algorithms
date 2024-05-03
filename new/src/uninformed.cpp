@@ -48,7 +48,7 @@ void bfs_graph(state_t state, int& expanded_nodes, int& found_cost, int& start_h
     }
 }
 
-bool dls(search_node_t node, int limit, int& expanded_nodes, int& found_cost, int& start_heuristic){
+bool dfs(search_node_t node, int limit, int& expanded_nodes, int& found_cost, int& start_heuristic){
     if(node.state == GOAL_STATE){
         found_cost = node.cost;
         reset_average_manhattan_distance();
@@ -62,18 +62,18 @@ bool dls(search_node_t node, int limit, int& expanded_nodes, int& found_cost, in
             }
             state_t new_state = apply_action(node.state, action);
             search_node_t new_node = {new_state, action, 0, node.cost + 1, 0, 0};
-            if (dls(new_node, limit - 1, expanded_nodes, found_cost, start_heuristic)) return true;
+            if (dfs(new_node, limit - 1, expanded_nodes, found_cost, start_heuristic)) return true;
         }
     }
     return false;
 }
 
-void ids(state_t state, int& expanded_nodes, int& found_cost, int& start_heuristic){
+void idfs(state_t state, int& expanded_nodes, int& found_cost, int& start_heuristic){
     expanded_nodes = 0;
     start_heuristic = calculate_manhattan_distance(state, GOAL_STATE);
     search_node_t start_node = {state, NONE, 0, 0, 0, 0};
     for(int limit = 0; ;limit++){
-        if (dls(start_node, limit, expanded_nodes, found_cost, start_heuristic)){
+        if (dfs(start_node, limit, expanded_nodes, found_cost, start_heuristic)){
             return;
         }
     }

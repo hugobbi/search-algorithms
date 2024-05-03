@@ -14,14 +14,14 @@ typedef struct search_node_t {
 } search_node_t;
 
 void bfs_graph(state_t state, int& expanded_nodes, int& found_cost, int& start_heuristic);
-void ids(state_t state, int& expanded_nodes, int& found_cost, int& start_heuristic);
+void idfs(state_t state, int& expanded_nodes, int& found_cost, int& start_heuristic);
 void a_star(state_t state, int& expanded_nodes, int& found_cost, int& start_heuristic);
 void a_star_15(state_t state, int& expanded_nodes, int& found_cost, int& start_heuristic);
 void gbfs(state_t state, int& expanded_nodes, int& found_cost, int& start_heuristic);
 void ida_star(state_t state, int& expanded_nodes, int& found_cost, int& start_heuristic);
 
 void run_bfs_graph(state_t state);
-void run_ids(state_t state);
+void run_idfs(state_t state);
 void run_a_star(state_t state);
 void run_a_star_15(state_t state);
 void run_gbfs(state_t state);

@@ -18,10 +18,10 @@ void run_bfs_graph(state_t state){
     reset_average_manhattan_distance();
 }
 
-void run_ids(state_t state){
+void run_idfs(state_t state){
     auto start = std::chrono::high_resolution_clock::now();
     int expanded_nodes = 0, found_cost = 0, start_heuristic = 0;
-    ids(state, expanded_nodes, found_cost, start_heuristic);
+    idfs(state, expanded_nodes, found_cost, start_heuristic);
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration = end - start;
     std::cout << expanded_nodes << "," << found_cost << "," << duration.count() << "," << 0 << "," << start_heuristic << std::endl;
