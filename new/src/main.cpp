@@ -56,15 +56,15 @@ int main(int argc, char* argv[]) {
     }
     states.push_back(current_state);
 
-    if(algorithm == "-bfs_graph") {
+    if(algorithm == "-bfs") {
         for(state_t state : states) {
             run_bfs_graph(state);
         }
-    } else if(algorithm == "-ids") {
+    } else if(algorithm == "-idfs") {
         for(state_t state : states) {
             run_ids(state);
         }
-    } else if(algorithm == "-a_star") {
+    } else if(algorithm == "-astar") {
         for(state_t state : states) {
             if(is_15) {
                 run_a_star_15(state);
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
         for(state_t state : states) {
             run_gbfs(state);
         }
-    } else if(algorithm == "-ida_star") {
+    } else if(algorithm == "-idastar") {
         for(state_t state : states) {
             run_ida_star(state);
         }
