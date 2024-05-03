@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -Iheaders
+CXXFLAGS = -Wall -Iheaders -O3
 LDFLAGS =
 
 # Build directory
