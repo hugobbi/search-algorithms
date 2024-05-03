@@ -1,3 +1,8 @@
+/**
+ * Puzzle-related functions
+ * We tried to reduce branching in the code by using arrays and bit manipulation
+ * to improve performance.
+*/
 #include "../headers/puzzle.hpp"
 #include <iostream>
 #include <cmath>

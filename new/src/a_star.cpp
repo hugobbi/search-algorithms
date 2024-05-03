@@ -1,3 +1,14 @@
+/**
+ * Implementation of the A* algorithm and its variations
+ * Mostly taken from the slides. 
+ * Standard stuff.
+ * There's a lot of code repetition but it's not worth it to refactor it.
+ * The templates were breaking the code :(
+ * 
+ * IDA_STAR has a different average heuristic from the reference implementation,
+ * but I am pretty sure it is correct. We managed to get the same results as the reference implementation,
+ * but that version called the heuristic function more than what was strictly necessary.
+*/
 #include <queue>
 #include <iostream>
 #include <unordered_map>
@@ -16,6 +27,9 @@ struct CompareNode {
         return smaller_cost || (equal_cost && (smaller_heuristic || (equal_heuristic && lifo_seq)));
     }
 };
+
+// I wish I had more time to implement a pairing heap.
+// Some of the values got wacky when I did, so I am pretty sure I was doing something wrong.
 
 void a_star(state_t start_state, int& expanded_nodes, int& found_cost, int& start_heuristic){
     int seq = 0;

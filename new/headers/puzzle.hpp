@@ -3,6 +3,21 @@
 #include <vector>
 #include <stdint.h>
 
+/**
+ * The state is represented as a 64-bit integer where each 4 bits represent a tile.
+ * Such that the state 0x012345678 represents the following board:
+ * 0 1 2
+ * 3 4 5
+ * 6 7 8
+ * 
+ * If the state is 0x0123456789abcdef, the board is:
+ * 00 01 02 03
+ * 04 05 06 07
+ * 08 09 10 11
+ * 12 13 14 15
+ * 
+ * This has the neat property that the hex representation of the state is the same as the board.
+*/
 typedef uint64_t state_t;
 #define GOAL_STATE 0x012345678
 #define GOAL_STATE_15 0x0123456789abcdef

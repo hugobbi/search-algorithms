@@ -1,3 +1,6 @@
+/**
+ * Helper functions to run the search algorithms and print the results in the format required by the tests.
+*/
 #include "../headers/search.hpp"
 #include "../headers/puzzle.hpp"
 

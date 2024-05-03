@@ -1,3 +1,8 @@
+/**
+ * Implementations of uninformed search algorithms
+ * Mostly taken from the slides
+ * Standard stuff.
+*/
 #include "../headers/search.hpp"
 #include "../headers/puzzle.hpp"
 #include <deque>

@@ -2,6 +2,8 @@
 #include "puzzle.hpp"
 #include <vector>
 
+// As the tests do not require printing the whole path, we can simplify the search node
+// to only store the state, action, heuristic, cost, total_cost and sequence number
 typedef struct search_node_t {
     state_t state;
     action_t action;
