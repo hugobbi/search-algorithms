@@ -32,7 +32,6 @@ int main(int argc, char* argv[]) {
 
         // If there is a comma in the string, this is the last number of the state
         if(contains_comma(state_str)) {
-            std::cout << count << std::endl;
             if(count == 15) {
                 is_15 = true;
             }
@@ -71,10 +70,6 @@ int main(int argc, char* argv[]) {
             } else {
                 run_a_star(state);
             }
-        }
-    } else if(algorithm == "-a_star_15") {
-        for(state_t state : states) {
-            run_a_star_15(state);
         }
     } else if(algorithm == "-gbfs") {
         for(state_t state : states) {
