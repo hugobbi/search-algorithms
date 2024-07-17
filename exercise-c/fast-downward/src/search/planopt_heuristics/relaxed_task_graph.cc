@@ -2,31 +2,22 @@
 
 #include <iostream>
 #include <vector>
-#include <algorithm>
 #include <unordered_map>
-#include <set>
+
+
+
 
 using namespace std;
 
-
-struct SetHash {
-    std::size_t operator()(const std::set<int>& s) const {
-        std::size_t hash = 0;
-        std::hash<int> hasher;
-        for (const int& i : s) {
-            hash ^= hasher(i) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-        }
-        return hash;
-    }
-};
-
-struct SetEqual {
-    bool operator()(const std::set<int>& lhs, const std::set<int>& rhs) const {
-        return lhs == rhs;
-    }
-};
-
 namespace planopt_heuristics {
+
+  string name_formula(string prev_formula, PropositionID var){
+    if(prev_formula == ""){
+      return to_string(var);
+    }
+    return prev_formula + "&" + to_string(var);
+  }
+  
 RelaxedTaskGraph::RelaxedTaskGraph(const TaskProxy &task_proxy)
     : relaxed_task(task_proxy),
       variable_node_ids(relaxed_task.propositions.size()) {
@@ -39,60 +30,93 @@ RelaxedTaskGraph::RelaxedTaskGraph(const TaskProxy &task_proxy)
         - the graph should contain all necessary edges.
     */
 
-  // Step 1: Generate an initial node and a goal node
-  // Both the initial state and the goal are AND nodes
-  initial_node_id = graph.add_node(NodeType::AND);
-  goal_node_id = graph.add_node(NodeType::AND);
-
-  // Step 2: Generate all variable nodes
+  // We will keep a map from set of variables to nodes
+  
+  unordered_map<string, NodeID> node_map;
+  
   for(Proposition p : relaxed_task.propositions){
-    // Generate a new node for each proposition
-    // Variables are OR nodes.
-    NodeID node_id = graph.add_node(NodeType::OR);
+    variable_node_ids[p.id] = graph.add_node(NodeType::OR);
+    node_map[name_formula("", p.id)] = variable_node_ids[p.id]; // Add it to our map
+  } // variable_node_ids should contain the node id of the variable node for variable i -- OK
+
+  initial_node_id = graph.add_node(NodeType::AND); // initial_node_id should contain the node id of the initial node -- OK
 
 
-    // Add it to the list
-    variable_node_ids[p.id] = node_id;
+  string initial_formula = "";
+  for(PropositionID p_id: relaxed_task.initial_state){
+    initial_formula = name_formula(initial_formula, p_id);
+    NodeID var_node = variable_node_ids[p_id];
+    graph.add_edge(var_node, initial_node_id);
+  } // for all variables in the initial state, there is an arc from the variable to the initial node -- OK
+  
+  node_map[initial_formula] = initial_node_id; // Add initial node to the map
+
+  string goal_formula = "";
+  for(PropositionID p_id : relaxed_task.goal){
+    goal_formula = name_formula(goal_formula, p_id);
+    if(node_map.find(goal_formula) == node_map.end()){
+      node_map[goal_formula] = graph.add_node(NodeType::AND);
+      graph.add_edge(node_map[goal_formula], goal_node_id);
+      graph.add_edge(node_map[goal_formula], variable_node_ids[p_id]);
+    }
+    goal_node_id = node_map[goal_formula];
   }
+  if(relaxed_task.goal.size() == 0){ // If the list was empty, the goal is trivially true
+    goal_node_id = graph.add_node(NodeType::AND);
+  }
+  // Goal subgraph -- OK
 
-  // Some variables have inbound arrows to the initial node
+  for(RelaxedOperator op : relaxed_task.operators){
+    
+    // We create an effect node for each operator
+    NodeID effect = graph.add_node(NodeType::AND, op.cost);
+    for(PropositionID var : op.effects){
+      graph.add_edge(variable_node_ids[var], effect); // The effect sets the vars to true
+    }
+
+    // Now we create the preconditions
+    string precondition_formula = "";
+    NodeID precondition_node = -1;
+    for(PropositionID p_id : op.preconditions){
+      precondition_formula = name_formula(precondition_formula, p_id);
+      if(node_map.find(precondition_formula) == node_map.end()){
+	node_map[precondition_formula] = graph.add_node(NodeType::AND);
+	graph.add_edge(node_map[precondition_formula], precondition_node);
+	graph.add_edge(node_map[precondition_formula], variable_node_ids[p_id]);
+      }
+      precondition_node = node_map[precondition_formula];
+    }
+    if(op.preconditions.size() == 0){
+      precondition_node = graph.add_node(NodeType::AND);
+    }
+    graph.add_edge(effect, precondition_node);
+  } // Operators --  OK
+
+  /*Unga-Bunga solution
+  for(Proposition p : relaxed_task.propositions){
+    variable_node_ids[p.id] = graph.add_node(NodeType::OR);
+  }
+  initial_node_id = graph.add_node(NodeType::AND);
   for(PropositionID p_id : relaxed_task.initial_state){
     graph.add_edge(variable_node_ids[p_id], initial_node_id);
   }
 
-  // The goal has dependencies in some variables
+  goal_node_id = graph.add_node(NodeType::AND);
   for(PropositionID p_id : relaxed_task.goal){
     graph.add_edge(goal_node_id, variable_node_ids[p_id]);
   }
 
-  // Now we have to create the operator sub-graphs.
-  unordered_map<set<PropositionID>, NodeID, SetHash, SetEqual> formula_nodes;
-
   for(RelaxedOperator op : relaxed_task.operators){
-    NodeID effect_node = graph.add_node(NodeType::AND, op.cost); // Added cost for ex. 2-c
-    for(PropositionID p : op.effects){
-      graph.add_edge(variable_node_ids[p], effect_node);
+    NodeID effects = graph.add_node(NodeType::AND, op.cost);
+    for(PropositionID p_id : op.effects){
+      graph.add_edge(variable_node_ids[p_id], effects);
     }
-    NodeID precondition_node;
-    if(op.preconditions.size() == 1){
-      // Don't create sub-formulas if they are equal to variables
-      precondition_node = variable_node_ids[op.preconditions[0]];
-    }else{
-      set<PropositionID> preconditions;
-      for(PropositionID p : op.preconditions){
-	preconditions.insert(p);
-      }
-      if(formula_nodes.find(preconditions) == formula_nodes.end()){
-	// We don't have a node for this formula
-	formula_nodes[preconditions] = graph.add_node(NodeType::AND);
-	for(PropositionID p : op.preconditions){
-	  graph.add_edge(formula_nodes[preconditions], variable_node_ids[p]);
-	}
-      }
-      precondition_node = formula_nodes[preconditions];
+    NodeID preconditions = graph.add_node(NodeType::AND);
+    for(PropositionID p_id : op.preconditions){
+      graph.add_edge(preconditions, variable_node_ids[p_id]);
     }
-    graph.add_edge(effect_node, precondition_node);
-  }
+    graph.add_edge(effects, preconditions);
+    }*/
 }
 
 void RelaxedTaskGraph::change_initial_state(const GlobalState &global_state) {
@@ -123,7 +147,8 @@ int RelaxedTaskGraph::additive_cost_of_goal() {
     // to return the h^add value of the goal node.
 
     // TODO: add your code for exercise 2 (c) here.
-    return -1;
+  graph.weighted_most_conservative_valuation();
+  return graph.get_node(goal_node_id).additive_cost;
 }
 
 int RelaxedTaskGraph::ff_cost_of_goal() {

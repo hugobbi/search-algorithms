@@ -5,9 +5,9 @@
 #include <algorithm>
 #include <deque>
 #include <iostream>
-#include <unordered_set>
 #include <queue>
-#include <limits> 
+#include <limits>
+#include <utility>
 
 using namespace std;
 
@@ -41,9 +41,6 @@ const AndOrGraphNode &AndOrGraph::get_node(NodeID id) const {
     return nodes[id];
 }
 
-
-
-
 void AndOrGraph::most_conservative_valuation() {
     /*
       General approach for computing the most conservative valuation:
@@ -70,47 +67,35 @@ void AndOrGraph::most_conservative_valuation() {
         node.num_forced_successors = 0;
         if (node.type == NodeType::AND && node.successor_ids.empty()) {
             queue.push_back(node.id);
-	    node.forced_true = true; // Added here to stop repeating stuff later
-        }
+	    // We should mark all initial nodes as forced true here.
+	    node.forced_true = true;
+	}
     }
 
     /*
       TODO: add your code for exercise 2 (a) here. Ignore the members
       direct_cost, additive_cost, and achiever for now.
     */
-
-
-    // Avoid expanding the same node twice
-    // unordered_set<int> expanded_ids;
-    // While there are nodes in the queue...
     while(!queue.empty()){
-      
-      AndOrGraphNode &cur_node = nodes[queue.front()];
+      // Invariant: Every node here is already forced true
+      AndOrGraphNode &node = nodes[queue.front()];
       queue.pop_front();
-      
-      // Iterate through predecessors
-      for(int pred_id : cur_node.predecessor_ids){
-	AndOrGraphNode &pred = nodes[pred_id];
-	pred.num_forced_successors += 1;
-	if(!pred.forced_true){
-	  switch(pred.type){
-	  case NodeType::OR:
-	    queue.push_back(pred_id);
-	    pred.forced_true = true;
-	    break;
-	  case NodeType::AND:
-	    bool is_done = pred.num_forced_successors == pred.successor_ids.size();
-	    if(is_done){
-	      queue.push_back(pred_id);
-	      pred.forced_true = true;
-	    }
-	    break;
-	  }
+
+      for(NodeID predecessor_id : node.predecessor_ids){
+	AndOrGraphNode &pred = nodes[predecessor_id]; // Get the actual predecessor node.
+	pred.num_forced_successors++; // Increase num_forced_successors as per instructions.
+	bool should_add_to_queue = !pred.forced_true && // We should add the node_id to the queue if it isn't forced true and...
+	  ((pred.type == NodeType::OR) || //Is an OR node (because it has a forced successor) or...
+	   (pred.num_forced_successors == pred.successor_ids.size())); // All successors are forced true.
+
+	if(should_add_to_queue){
+	  pred.forced_true = true;
+	  queue.push_back(predecessor_id);
 	}
+
       }
       
-    }
-    
+    } // Queue is empty
 }
 
 void AndOrGraph::weighted_most_conservative_valuation() {
@@ -140,6 +125,51 @@ void AndOrGraph::weighted_most_conservative_valuation() {
     /*
       TODO: add your code for exercise 2 (c) here.
     */
+
+  priority_queue<pair<int, NodeID>, vector<pair<int, NodeID>>, greater<pair<int, NodeID>>> pq;
+
+  for(AndOrGraphNode &node : nodes){
+    node.forced_true = false;
+    node.num_forced_successors = 0;
+    node.additive_cost = numeric_limits<int>::max();
+    if (node.type == NodeType::AND && node.successor_ids.empty()) {
+      node.additive_cost = 0;
+      pq.push({node.additive_cost, node.id});
+      // We should mark all initial nodes as forced true here.
+      node.forced_true = true;
+    }
+  }
+
+  while(!pq.empty()){
+    AndOrGraphNode &node = nodes[pq.top().second];
+    pq.pop();
+    for(NodeID pred_id : node.predecessor_ids){
+      AndOrGraphNode &pred = nodes[pred_id];
+      pred.num_forced_successors++;
+      switch(pred.type){
+      case NodeType::OR:
+	if(pred.additive_cost > (node.additive_cost + pred.direct_cost)){
+	  pred.forced_true = true;
+	  pred.additive_cost = node.additive_cost + pred.direct_cost;
+	  pq.push({pred.additive_cost, pred.id});
+	}
+	break;
+      case NodeType::AND:
+	if(pred.num_forced_successors == pred.successor_ids.size() && !pred.forced_true){
+	  pred.additive_cost = 0;
+	  // We would just compare the values and get the max here
+	  // if we were using hmax
+	  for(NodeID succ : pred.successor_ids){
+	    pred.additive_cost += nodes[succ].additive_cost;
+	  }
+	  pred.additive_cost += pred.direct_cost; // We would still sum the direct cost tho
+	  pred.forced_true = true;
+	  pq.push({pred.additive_cost, pred.id});
+	}
+      }
+    }
+  }// PQ empty
+  
 }
 
 void add_nodes(vector<string> names, NodeType type, AndOrGraph &g, unordered_map<string, NodeID> &ids) {
