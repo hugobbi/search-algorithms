@@ -134,6 +134,7 @@ void AndOrGraph::weighted_most_conservative_valuation() {
     node.additive_cost = numeric_limits<int>::max();
     if (node.type == NodeType::AND && node.successor_ids.empty()) {
       node.additive_cost = 0;
+      node.achiever = -1;
       pq.push({node.additive_cost, node.id});
       // We should mark all initial nodes as forced true here.
       node.forced_true = true;
@@ -150,6 +151,7 @@ void AndOrGraph::weighted_most_conservative_valuation() {
       case NodeType::OR:
 	if(pred.additive_cost > (node.additive_cost + pred.direct_cost)){
 	  pred.forced_true = true;
+	  pred.achiever = node.id;
 	  pred.additive_cost = node.additive_cost + pred.direct_cost;
 	  pq.push({pred.additive_cost, pred.id});
 	}

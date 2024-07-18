@@ -3,8 +3,8 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
-
-
+#include <algorithm>
+#include <deque>
 
 
 using namespace std;
@@ -31,7 +31,6 @@ RelaxedTaskGraph::RelaxedTaskGraph(const TaskProxy &task_proxy)
     */
 
   // We will keep a map from set of variables to nodes
-  
   unordered_map<string, NodeID> node_map;
   
   for(Proposition p : relaxed_task.propositions){
@@ -43,6 +42,7 @@ RelaxedTaskGraph::RelaxedTaskGraph(const TaskProxy &task_proxy)
 
 
   string initial_formula = "";
+  sort(relaxed_task.initial_state.begin(), relaxed_task.initial_state.end());
   for(PropositionID p_id: relaxed_task.initial_state){
     initial_formula = name_formula(initial_formula, p_id);
     NodeID var_node = variable_node_ids[p_id];
@@ -52,6 +52,7 @@ RelaxedTaskGraph::RelaxedTaskGraph(const TaskProxy &task_proxy)
   node_map[initial_formula] = initial_node_id; // Add initial node to the map
 
   string goal_formula = "";
+  sort(relaxed_task.goal.begin(), relaxed_task.goal.end());
   for(PropositionID p_id : relaxed_task.goal){
     goal_formula = name_formula(goal_formula, p_id);
     if(node_map.find(goal_formula) == node_map.end()){
@@ -61,6 +62,7 @@ RelaxedTaskGraph::RelaxedTaskGraph(const TaskProxy &task_proxy)
     }
     goal_node_id = node_map[goal_formula];
   }
+  
   if(relaxed_task.goal.size() == 0){ // If the list was empty, the goal is trivially true
     goal_node_id = graph.add_node(NodeType::AND);
   }
@@ -77,6 +79,10 @@ RelaxedTaskGraph::RelaxedTaskGraph(const TaskProxy &task_proxy)
     // Now we create the preconditions
     string precondition_formula = "";
     NodeID precondition_node = -1;
+
+    // Sort preconditions so the formulas are consistent
+    sort(op.preconditions.begin(), op.preconditions.end());
+    
     for(PropositionID p_id : op.preconditions){
       precondition_formula = name_formula(precondition_formula, p_id);
       if(node_map.find(precondition_formula) == node_map.end()){
@@ -90,9 +96,9 @@ RelaxedTaskGraph::RelaxedTaskGraph(const TaskProxy &task_proxy)
       precondition_node = graph.add_node(NodeType::AND);
     }
     graph.add_edge(effect, precondition_node);
-  } // Operators --  OK
+  } // Operators --  OK 
 
-  /*Unga-Bunga solution
+  /*/ Unga-Bunga solution
   for(Proposition p : relaxed_task.propositions){
     variable_node_ids[p.id] = graph.add_node(NodeType::OR);
   }
@@ -151,9 +157,36 @@ int RelaxedTaskGraph::additive_cost_of_goal() {
   return graph.get_node(goal_node_id).additive_cost;
 }
 
-int RelaxedTaskGraph::ff_cost_of_goal() {
-    // TODO: add your code for exercise 2 (e) here.
-    return -1;
-}
 
+int RelaxedTaskGraph::ff_cost_of_goal() {
+  graph.weighted_most_conservative_valuation();
+  deque<NodeID> queue;
+  unordered_set<NodeID> closed;
+  queue.push_back(goal_node_id);
+  int ff_cost = 0;
+  while(!queue.empty()){
+    AndOrGraphNode node = graph.get_node(queue.front());
+    queue.pop_front();
+    ff_cost += node.direct_cost;
+    switch(node.type){
+    case NodeType::OR:
+      if(node.achiever == -1){
+	cout << "something is fishy\n";
+      }
+      if(closed.find(node.achiever) == closed.end()){
+	queue.push_back(node.achiever);
+	closed.insert(node.achiever);
+      }
+      break;
+    case NodeType::AND:
+      for(NodeID succ : node.successor_ids){
+	if(closed.find(succ) == closed.end()){
+	  queue.push_back(succ);
+	  closed.insert(succ);
+	}
+      }
+    }
+  }
+  return  ff_cost;
+}
 }
