@@ -47,5 +47,6 @@
         "typeinfo": "cpp",
         "set": "cpp",
         "list": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "/home/hugobbi/ufrgs/etapa/ia_avancada/search-algorithms/exercise-c/fast-downward/src"
 }
