@@ -34,20 +34,40 @@ Projection::Projection(const TNFTask &task, const Pattern &pattern)
         multiplier *= projected_task.variable_domains[i];
     }
 
-    /*
+   /*
       Project initial state and goal state, and set
       projected_task.initial_state and projected_task.goal_state.
     */
 
-    // TODO: add your code for exercise (a) here.
-
+    
+    for (int pattern_var_id : pattern){
+      projected_task.initial_state.push_back(task.initial_state[pattern_var_id]);
+      projected_task.goal_state.push_back(task.goal_state[pattern_var_id]);
+    }
+    
+    
+    
     /*
       Project operators and create the projected operators in
       projected_task.operators. Do not add operators that become no-ops after
       projection.
     */
 
-    // TODO: add your code for exercise (a) here.
+    for(TNFOperator op : task.operators){
+      TNFOperator p_op;
+      p_op.name = op.name;
+      p_op.cost = op.cost;
+      
+      for(TNFOperatorEntry entry : op.entries){
+	int mapped_id = variable_mapping[entry.variable_id];
+	if(mapped_id != -1){
+	  p_op.entries.push_back(TNFOperatorEntry(mapped_id, entry.precondition_value, entry.effect_value));
+	}
+      }
+      if(!p_op.entries.empty()){
+	projected_task.operators.push_back(p_op);
+      }
+    }
 }
 
 TNFState Projection::project_state(const TNFState &original_state) const {
