@@ -15,6 +15,26 @@ namespace planopt_heuristics {
 */
 using QueueEntry = pair<int, int>;
 
+
+  bool op_reaches_state(const TNFOperator &op, const TNFState &state){
+    for(TNFOperatorEntry entry : op.entries){
+      if (state[entry.variable_id] != entry.effect_value){
+	return false;
+      }
+    }
+    return true;
+  }
+
+  TNFState get_precondition_state(const TNFOperator &op, const TNFState &state){
+    TNFState prev_state = state;
+    for(TNFOperatorEntry entry : op.entries){
+      prev_state[entry.variable_id] = entry.precondition_value;
+    }
+    return prev_state;
+  }
+  
+  
+  
 PatternDatabase::PatternDatabase(const TNFTask &task, const Pattern &pattern)
     : projection(task, pattern) {
     /*
@@ -45,6 +65,23 @@ PatternDatabase::PatternDatabase(const TNFTask &task, const Pattern &pattern)
     queue.push({0, projection.rank_state(projected_task.goal_state)});
 
     // TODO: add your code for exercise (b) here.
+    while(!queue.empty()){
+      int distance = queue.top().first;
+      int index = queue.top().second;
+      cout << "Running " << index << " with cost: " << distance << endl;
+      TNFState state = projection.unrank_state(index);
+      queue.pop();
+      distances[index] = distance;
+      for(TNFOperator op : projected_task.operators){
+	if(op_reaches_state(op, state)){
+	  int new_index = projection.rank_state(get_precondition_state(op, state));
+	  if(distances[new_index] > distance+1){
+	    distances[new_index] = distance+1;
+	    queue.push({distance+1, new_index});
+	  }
+	}
+      }
+      }
 }
 
 int PatternDatabase::lookup_distance(const TNFState &original_state) const {
