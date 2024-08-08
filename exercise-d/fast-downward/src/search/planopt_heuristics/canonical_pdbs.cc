@@ -1,7 +1,9 @@
 #include "canonical_pdbs.h"
 
 #include "../algorithms/max_cliques.h"
-#include <limits> 
+#include <limits>
+#include <set>
+#include <algorithm>
 
 using namespace std;
 
@@ -18,6 +20,7 @@ bool affects_pattern(const TNFOperator &op, const Pattern &pattern) {
     return false;
 }
 
+  
 vector<vector<int>> build_compatibility_graph(const vector<Pattern> &patterns, const TNFTask &task) {
     /*
       Build the compatibility graph of the given pattern collection in the form
@@ -31,9 +34,24 @@ vector<vector<int>> build_compatibility_graph(const vector<Pattern> &patterns, c
 
     // TODO: add your code for exercise (d) here.
 
+    for(int i = 0; i < patterns.size(); i++){
+      for(int j = 0; j < patterns.size(); j++){
+	if(i == j) continue;
+	bool is_safe = true;
+	for(TNFOperator op : task.operators){
+	  if(affects_pattern(op, patterns[i]) && affects_pattern(op, patterns[j])){
+	    is_safe = false;
+	    break;
+	  }
+	}
+	if(is_safe){
+	  graph[i].push_back(j);
+	}
+      }
+    }
+    
     return graph;
 }
-
 CanonicalPatternDatabases::CanonicalPatternDatabases(
     const TNFTask &task, const vector<Pattern> &patterns) {
     for (const Pattern &pattern : patterns) {
@@ -71,7 +89,13 @@ int CanonicalPatternDatabases::compute_heuristic(const TNFState &original_state)
          of the canonical heuristic.
        */
        int h = 0;
-
+       for(int i = 0; i < maximal_additive_sets.size(); i++){
+	 int candidate = heuristic_values[i];
+	 for(int compatible_pattern : maximal_additive_sets[i]){
+	   candidate += heuristic_values[compatible_pattern];
+	 }
+	 if(candidate > h) h = candidate;
+       }
        // TODO: add your code for exercise (d) here.
 
        return h;
