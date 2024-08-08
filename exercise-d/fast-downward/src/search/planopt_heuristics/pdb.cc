@@ -62,16 +62,17 @@ PatternDatabase::PatternDatabase(const TNFTask &task, const Pattern &pattern)
       later on. This is sufficient to turn the search into a regression since
       the task is in TNF.
     */
-    queue.push({0, projection.rank_state(projected_task.goal_state)});
 
+    queue.push({0, projection.rank_state(projected_task.goal_state)});
+    
+    distances[projection.rank_state(projected_task.goal_state)] = 0;
     // TODO: add your code for exercise (b) here.
     while(!queue.empty()){
       int distance = queue.top().first;
       int index = queue.top().second;
-      cout << "Running " << index << " with cost: " << distance << endl;
+      //cout << "Running " << index << " with cost: " << distance << endl;
       TNFState state = projection.unrank_state(index);
       queue.pop();
-      distances[index] = distance;
       for(TNFOperator op : projected_task.operators){
 	if(op_reaches_state(op, state)){
 	  int new_index = projection.rank_state(get_precondition_state(op, state));
