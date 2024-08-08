@@ -90,7 +90,7 @@ int CanonicalPatternDatabases::compute_heuristic(const TNFState &original_state)
        */
        int h = 0;
        for(int i = 0; i < maximal_additive_sets.size(); i++){
-	 int candidate = heuristic_values[i];
+	 int candidate = 0;
 	 for(int compatible_pattern : maximal_additive_sets[i]){
 	   candidate += heuristic_values[compatible_pattern];
 	 }
